@@ -15,7 +15,7 @@ import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import java.util.List;
 
-public class PartitionView extends JFrame implements Runnable {
+public final class PartitionView extends JFrame implements Runnable {
 
     private static final int NODE_SIZE = 4;
     private static final int LINE_SPACING = 100;
@@ -27,6 +27,7 @@ public class PartitionView extends JFrame implements Runnable {
     private int x0;
     private final Node[] nodes;
     private final int lineQty;
+    private boolean disposed;
 
     public PartitionView(String json) {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -49,6 +50,7 @@ public class PartitionView extends JFrame implements Runnable {
                 }
             }
             this.lineQty = maxTrackNumber;
+            disposed = false;
         } catch (JsonProcessingException e) {
             JOptionPane.showMessageDialog(this, "Не удалось разобрать JSON");
             dispose();
@@ -87,6 +89,16 @@ public class PartitionView extends JFrame implements Runnable {
         for (Node n : nodes) {
             drawNode(n, g);
         }
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        disposed = true;
+    }
+
+    public boolean isDisposed() {
+        return disposed;
     }
 
     private void fit() {
