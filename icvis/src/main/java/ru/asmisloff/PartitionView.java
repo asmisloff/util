@@ -121,6 +121,9 @@ public final class PartitionView extends JFrame implements Runnable {
     }
 
     private class MouseMotionListener extends MouseMotionAdapter {
+
+        private final Viewport vp = new Viewport(origin, 0, 1f / xScale, 1);
+
         @Override
         public void mouseDragged(MouseEvent e) {
             origin += e.getX() - x0;
@@ -130,7 +133,9 @@ public final class PartitionView extends JFrame implements Runnable {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            float x = (e.getX() - origin) / (1e3f * xScale);
+            vp.setScale(1f / xScale, 1);
+            vp.setOrigin(-origin / xScale, 0);
+            float x = vp.mx(e.getX());
             setTitle(String.format("%.3f км", x));
         }
     }
