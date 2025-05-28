@@ -8,10 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import java.util.List;
 
@@ -22,18 +18,18 @@ public final class PartitionView extends JFrame implements Runnable {
     private static final int PADDING = 50;
     private int xLeft;
     private int xRight;
-    private int origin;
-    private float xScale = 1f;
-    private int x0;
+    int origin;
+    float xScale = 1f;
     private final Node[] nodes;
     private final int lineQty;
     private boolean disposed;
+    final Viewport vp = new Viewport(getWidth(), getHeight());
 
     public PartitionView(String json) {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         ObjectMapper m = new ObjectMapper();
         try {
-            List<Node> data = m.readValue(json, new TypeReference<>() { });
+            List<Node> data = m.readValue(json, new TypeReference<>() {});
             nodes = new Node[data.size()];
             data.toArray(nodes);
             int maxTrackNumber = 0;
@@ -56,9 +52,7 @@ public final class PartitionView extends JFrame implements Runnable {
             dispose();
             throw new RuntimeException(e);
         }
-        addMouseListener(new MouseListener());
-        addMouseMotionListener(new MouseMotionListener());
-        addMouseWheelListener(new MouseWheelListener());
+        registerMouseListeners();
     }
 
     public static PartitionView fromClipboard() {
@@ -86,6 +80,8 @@ public final class PartitionView extends JFrame implements Runnable {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        vp.setScale(1f / xScale, 1f);
+        vp.setOrigin(-origin / xScale, 0);
         for (Node n : nodes) {
             drawNode(n, g);
         }
@@ -101,70 +97,25 @@ public final class PartitionView extends JFrame implements Runnable {
         return disposed;
     }
 
-    private void fit() {
+    void fit() {
         origin = PADDING - (int) (xScale * xLeft);
         xScale = (getWidth() - PADDING * 2f) / (xRight - xLeft);
     }
 
     private void drawNode(Node n, Graphics g) {
         g.setColor(n.br() ? Color.red : Color.black);
-        g.fillOval(x(n), y(n), NODE_SIZE, NODE_SIZE);
+        int xc = vp.vpx(n.x());
+        if (n.br()) {
+            xc -= NODE_SIZE;
+        }
+        int yc = n.trackNumber() * LINE_SPACING;
+        g.fillOval(xc, yc, NODE_SIZE, NODE_SIZE);
     }
 
-    private int x(Node n) {
-        int val = (int) (n.x() * xScale) - NODE_SIZE / 2 + origin;
-        return n.br() ? val - NODE_SIZE : val;
-    }
-
-    private int y(Node n) {
-        return n.trackNumber() * LINE_SPACING;
-    }
-
-    private class MouseMotionListener extends MouseMotionAdapter {
-
-        private final Viewport vp = new Viewport(origin, 0, 1f / xScale, 1);
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            origin += e.getX() - x0;
-            x0 = e.getX();
-            repaint();
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {
-            vp.setScale(1f / xScale, 1);
-            vp.setOrigin(-origin / xScale, 0);
-            float x = vp.mx(e.getX());
-            setTitle(String.format("%.3f км", x));
-        }
-    }
-
-    private class MouseListener extends MouseAdapter {
-        @Override
-        public void mousePressed(MouseEvent e) {
-            x0 = e.getX();
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 2) {
-                fit();
-                repaint();
-            }
-        }
-    }
-
-    private class MouseWheelListener implements java.awt.event.MouseWheelListener {
-        @Override
-        public void mouseWheelMoved(MouseWheelEvent e) {
-            int r = e.getWheelRotation();
-            if (r != 0) {
-                float k = 1 + r * 0.1f;
-                xScale *= k;
-                origin = Math.round(e.getX() * (1 - k) + k * origin);
-                repaint();
-            }
-        }
+    private void registerMouseListeners() {
+        PartitionViewMouseListener mouseListener = new PartitionViewMouseListener(this);
+        addMouseListener(mouseListener);
+        addMouseMotionListener(mouseListener);
+        addMouseWheelListener(mouseListener);
     }
 }
