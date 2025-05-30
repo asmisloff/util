@@ -1,11 +1,18 @@
 package ru.asmisloff;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+/**
+ * @param index Индекс узла.
+ * @param x  Логическая координата узла, м.
+ * @param li Индекс линии.
+ * @param br true, если узел разрывной.
+ */
+public record Node(int index, int x, int li, boolean br) {
 
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public record Node(int i, int li, int x, boolean br) {
+    public Node(NodeDto dto) {
+        this(dto.i(), dto.x(), dto.li(), dto.br());
+    }
 
-    int trackNumber() {
-        return li - 10_000 * (li / 10_000);
+    public int trackNumber() {
+        return li % 10_000;
     }
 }
