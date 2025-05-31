@@ -57,7 +57,7 @@ public final class Partition {
 
     private static int compareNodes(Node n1, Node n2) {
         int xCmp = Integer.compare(n1.x(), n2.x());
-        if (xCmp == 0) return Integer.compare(n1.li(), n2.li());
+        if (xCmp == 0) return Integer.compare(n1.lineIndex(), n2.lineIndex());
         return xCmp;
     }
 }

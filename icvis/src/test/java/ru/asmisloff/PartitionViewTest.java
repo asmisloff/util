@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 class PartitionViewTest {
 

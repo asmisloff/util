@@ -64,6 +64,14 @@ public class Viewport {
         this.height = height;
     }
 
+    public float getScaleX() {
+        return scaleX;
+    }
+
+    public float getScaleY() {
+        return scaleY;
+    }
+
     public void setScale(float x, float y) {
         scaleX = x;
         scaleY = y;

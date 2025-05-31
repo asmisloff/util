@@ -13,8 +13,6 @@ import java.util.*;
 
 public final class PartitionView extends JFrame implements Runnable {
 
-    private static final int NODE_SIZE = 6;
-    private static final int LINE_SPACING = 100;
     private static final int PADDING = 50;
     private int xLeft;
     private int xRight;
@@ -36,7 +34,8 @@ public final class PartitionView extends JFrame implements Runnable {
         Arrays.sort(nodes, Comparator.comparingInt(Node::index));
         for (int i = 0; i < dto.edges().size(); i++) {
             EdgeDto eDto = dto.edges().get(i);
-            edges[i] = new Edge(findNode(eDto.src()), findNode(eDto.tgt()));
+            edges[i] = new Edge(Node.findByIndex(nodes, eDto.src()),
+                                Node.findByIndex(nodes, eDto.tgt()));
         }
         int maxTrackNumber = 0;
         if (nodes.length > 0) {
@@ -108,7 +107,7 @@ public final class PartitionView extends JFrame implements Runnable {
     @Override
     public void run() {
         var dim = getToolkit().getScreenSize();
-        dim.height = LINE_SPACING * (lineQty + 1);
+        dim.height = Node.LINE_SPACING * (lineQty + 1);
         setSize(dim);
         setVisible(true);
         fit();
@@ -142,11 +141,14 @@ public final class PartitionView extends JFrame implements Runnable {
             for (Partition p : partitions) {
                 for (Edge e : p.edges()) {
                     if (p.leftToRight(e)) {
-                        drawEdge(e, EdgeShape.LINE, g);
+                        e.setShape(Edge.Shape.LINE);
+                        e.paint(g, vp);
                     } else if (p.leftToLeft(e)) {
-                        drawEdge(e, EdgeShape.ARC_RIGHT, g);
+                        e.setShape(Edge.Shape.ARC_RIGHT);
+                        e.paint(g, vp);
                     } else { // rightToRight
-                        drawEdge(e, EdgeShape.ARC_LEFT, g);
+                        e.setShape(Edge.Shape.ARC_LEFT);
+                        e.paint(g, vp);
                     }
                 }
                 drawNodes(p.leftSection(), g);
@@ -158,40 +160,7 @@ public final class PartitionView extends JFrame implements Runnable {
 
     private void drawNodes(Iterable<Node> nodes, Graphics g) {
         for (Node n : nodes) {
-            drawNode(n, g);
-        }
-    }
-
-    private void drawNode(Node n, Graphics g) {
-        g.setColor(n.br() ? Color.red : Color.black);
-        int xc = vp.vpx(n.x());
-        if (n.br()) {
-            xc -= NODE_SIZE;
-        }
-        int yc = n.trackNumber() * LINE_SPACING;
-        g.fillOval(xc - NODE_SIZE / 2, yc - NODE_SIZE / 2, NODE_SIZE, NODE_SIZE);
-    }
-
-    private void drawEdge(Edge e, EdgeShape shape, Graphics g) {
-        int xSrc = vp.vpx(e.src().x());
-        int xTgt = vp.vpx(e.tgt().x());
-        if (e.src().br()) xSrc -= NODE_SIZE;
-        if (e.tgt().br()) xTgt -= NODE_SIZE;
-        int ySrc = e.src().trackNumber() * LINE_SPACING;
-        int yTgt = e.tgt().trackNumber() * LINE_SPACING;
-
-        if (shape == EdgeShape.LINE) {
-            g.drawLine(xSrc, ySrc, xTgt, yTgt);
-        } else {
-            int height = Math.abs(ySrc - yTgt);
-            int width = height / 8;
-            if (shape == EdgeShape.ARC_LEFT) {
-                g.drawArc(xSrc - width / 2, Math.min(ySrc, yTgt), width, height, 90, 180);
-            } else if (shape == EdgeShape.ARC_RIGHT) {
-                g.drawArc(xSrc - width / 2, Math.min(ySrc, yTgt), width, height, -90, 180);
-            } else {
-                throw new IllegalStateException("Неизвестная форма ребра");
-            }
+            n.paint(g, vp);
         }
     }
 
@@ -201,24 +170,4 @@ public final class PartitionView extends JFrame implements Runnable {
         addMouseMotionListener(mouseListener);
         addMouseWheelListener(mouseListener);
     }
-
-    private Node findNode(int index) {
-        int begin = 0;
-        int end = nodes.length - 1;
-        while (begin <= end) {
-            int mid = (begin + end) >>> 1;
-            Node midNode = nodes[mid];
-            int midIndex = midNode.index();
-            if (index < midIndex) {
-                end = mid - 1;
-            } else if (index > midIndex) {
-                begin = mid + 1;
-            } else {
-                return midNode;
-            }
-        }
-        return null;
-    }
-
-    private enum EdgeShape {LINE, ARC_LEFT, ARC_RIGHT}
 }
