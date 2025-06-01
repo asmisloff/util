@@ -15,19 +15,19 @@ public class Viewport {
     }
 
     public int vpx(float mx) {
-        return Math.round((mx - mx0) / scaleX);
+        return Math.round((mx - mx0) * scaleX);
     }
 
     public int vpy(float my) {
-        return Math.round((my - my0) / scaleY);
+        return Math.round((my - my0) * scaleY);
     }
 
     public float mx(int vpx) {
-        return vpx * scaleX + mx0;
+        return vpx / scaleX + mx0;
     }
 
     public float my(int vpy) {
-        return vpy * scaleY + my0;
+        return vpy / scaleY + my0;
     }
 
     public float getOriginX() {
@@ -44,8 +44,8 @@ public class Viewport {
     }
 
     public void setCenter(float mx, float my) {
-        mx0 = mx - scaleX * width / 2f;
-        my0 = my - scaleY * height / 2f;
+        mx0 = mx - width / scaleX / 2f;
+        my0 = my - height / scaleY / 2f;
     }
 
     public int getWidth() {

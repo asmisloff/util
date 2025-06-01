@@ -22,6 +22,7 @@ public class BranchPartitions {
     public BranchPartitions(@NotNull PartitionsDto dto) {
         nodes = createNodes(dto);
         edges = createEdges(dto);
+        createPartitions();
     }
 
     public int xLeft() { return nodes[0].x(); }
@@ -108,6 +109,27 @@ public class BranchPartitions {
             );
         }
         return edges;
+    }
+
+    private void createPartitions() {
+        List<Node> leftSection = new ArrayList<>();
+        int i = getSection(0, leftSection);
+        while (i < nodes.length) {
+            List<Node> rightSection = new ArrayList<>();
+            i = getSection(i, rightSection);
+            pp.add(new Partition(leftSection, rightSection));
+            leftSection = rightSection;
+        }
+    }
+
+    private int getSection(int i, List<Node> dest) {
+        Node n0 = nodes[i++];
+        int x0 = n0.x();
+        dest.add(n0);
+        while (i < nodes.length && nodes[i].x() == x0) {
+            dest.add(nodes[i++]);
+        }
+        return i;
     }
 
     @Nullable

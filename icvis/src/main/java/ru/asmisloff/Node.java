@@ -1,6 +1,8 @@
 package ru.asmisloff;
 
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 
@@ -18,6 +20,8 @@ public final class Node {
     private final int li;
     private final boolean br;
     private float y;
+
+    private static final Logger logger = LoggerFactory.getLogger(Node.class);
 
     /**
      * @param index Индекс узла.
@@ -65,6 +69,9 @@ public final class Node {
         }
         int yc = vp.vpy(y());
         g.fillOval(xc - R, yc - R, D, D);
+        if (logger.isTraceEnabled()) {
+            logger.trace("{}: {}, {}", index, xc, yc);
+        }
     }
 
     @Nullable
