@@ -22,7 +22,6 @@ final class PartitionViewMouseListener extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) {
-            view.fit();
             view.repaint();
         }
     }

@@ -11,7 +11,6 @@ import java.io.IOException;
 
 public final class PartitionView extends JFrame implements Runnable {
 
-    private static final int PADDING = 50;
     int origin;
     float xScale = 1f;
     private boolean disposed;
@@ -28,7 +27,7 @@ public final class PartitionView extends JFrame implements Runnable {
         lyt.viewport().setScale(40, 1);
         lyt.viewport().setCenter(10, 0);
         add(lyt);
-        registerMouseListeners();
+//        registerMouseListeners();
     }
 
     public static PartitionView fromJson(String json) {
@@ -62,12 +61,6 @@ public final class PartitionView extends JFrame implements Runnable {
         dim.height = Node.LINE_SPACING * (lyt.getPartitions().numLines() + 1);
         setSize(dim);
         setVisible(true);
-        fit();
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
     }
 
     @Override
@@ -78,19 +71,5 @@ public final class PartitionView extends JFrame implements Runnable {
 
     public boolean isDisposed() {
         return disposed;
-    }
-
-    void fit() {
-        int xLeft = lyt.getPartitions().xLeft();
-        int xRight = lyt.getPartitions().xRight();
-        origin = PADDING - (int) (xScale * xLeft);
-        xScale = (getWidth() - PADDING * 2f) / (xRight - xLeft);
-    }
-
-    private void registerMouseListeners() {
-        PartitionViewMouseListener mouseListener = new PartitionViewMouseListener(this);
-        addMouseListener(mouseListener);
-        addMouseMotionListener(mouseListener);
-        addMouseWheelListener(mouseListener);
     }
 }

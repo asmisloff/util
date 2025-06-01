@@ -1,6 +1,5 @@
 package ru.asmisloff;
 
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,27 +68,5 @@ public final class Node {
         }
         int yc = vp.vpy(y());
         g.fillOval(xc - R, yc - R, D, D);
-        if (logger.isTraceEnabled()) {
-            logger.trace("{}: {}, {}", index, xc, yc);
-        }
-    }
-
-    @Nullable
-    public static Node findByIndex(Node[] arr, int index) {
-        int begin = 0;
-        int end = arr.length - 1;
-        while (begin <= end) {
-            int mid = (begin + end) >>> 1;
-            Node midNode = arr[mid];
-            int midIndex = midNode.index();
-            if (index < midIndex) {
-                end = mid - 1;
-            } else if (index > midIndex) {
-                begin = mid + 1;
-            } else {
-                return midNode;
-            }
-        }
-        return null;
     }
 }
