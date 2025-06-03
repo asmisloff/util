@@ -1,56 +1,82 @@
 package ru.asmisloff;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jetbrains.annotations.NotNull;
+import ru.asmisloff.model.BranchPartitions;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.util.function.Consumer;
 
 public class Layout extends JPanel {
 
-    private BranchPartitions pp;
+    private final BranchPartitions pp;
     private final Viewport vp = new Viewport(getWidth(), getHeight());
-    private final Logger logger = LoggerFactory.getLogger(Layout.class);
 
-    public Layout() {
-        MouseListener l = new MouseAdapter() {
+    private Consumer<MouseEvent> onMouseMoved = null;
+
+    public Layout(@NotNull BranchPartitions pp) {
+        this.pp = pp;
+        vp.setScale(1000f / (pp.xRight() - pp.xLeft()), 1f);
+        MouseAdapter l = new MouseAdapter() {
 
             private int x0;
+            private int y0;
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (onMouseMoved != null) onMouseMoved.accept(e);
+            }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                float mdx = vp.mx(e.getX() - x0);
-                vp.setOrigin(vp.getOriginX() - mdx, vp.getOriginY());
-                logger.trace("x0 = {}; ex = {}", x0, e.getX());
+                float mdx = vp.mx(e.getX()) - vp.mx(x0);
+                x0 = e.getX();
+                float mdy = e.isControlDown() ? 0 : vp.my(e.getY()) - vp.my(y0);
+                y0 = e.getY();
+                vp.setOrigin(vp.getOriginX() - mdx, vp.getOriginY() - mdy);
                 repaint();
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
                 x0 = e.getX();
+                y0 = e.getY();
             }
 
             @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, String.valueOf(vp.mx(e.getX())));
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int clicks = e.getWheelRotation();
+                if (clicks != 0) {
+                    int vx = e.getX();
+                    int vy = e.getY();
+                    float mx0 = vp.mx(vx);
+                    float my0 = vp.my(vy);
+                    float kx = 1f + clicks / 10f;
+                    float ky = e.isControlDown() ? 1f : kx;
+                    vp.setScale(vp.getScaleX() * kx, vp.getScaleY() * ky);
+                    float dx = vp.mx(vx) - mx0;
+                    float dy = vp.my(vy) - my0;
+                    vp.setOrigin(vp.getOriginX() - dx, vp.getOriginY() - dy);
+                    repaint();
+                }
             }
         };
         addMouseListener(l);
-        addMouseMotionListener((MouseMotionListener) l);
+        addMouseMotionListener(l);
+        addMouseWheelListener(l);
     }
 
     public BranchPartitions getPartitions() { return pp; }
 
-    public void setPartitions(BranchPartitions pp) {
-        this.pp = pp;
-    }
-
     public Viewport viewport() {
         return vp;
+    }
+
+    public void setOnMouseMoved(Consumer<MouseEvent> onMouseMoved) {
+        this.onMouseMoved = onMouseMoved;
     }
 
     @Override

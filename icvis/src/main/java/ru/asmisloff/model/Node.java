@@ -1,7 +1,7 @@
-package ru.asmisloff;
+package ru.asmisloff.model;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ru.asmisloff.Viewport;
+import ru.asmisloff.dto.NodeDto;
 
 import java.awt.*;
 
@@ -12,15 +12,13 @@ public final class Node {
 
     public static final int R = 3;
     public static final int D = 2 * R;
-    public static final int LINE_SPACING = 100;
+    public static final int LINE_SPACING = 50;
 
     private final int index;
     private final int x;
     private final int li;
     private final boolean br;
     private float y;
-
-    private static final Logger logger = LoggerFactory.getLogger(Node.class);
 
     /**
      * @param index Индекс узла.
@@ -37,7 +35,7 @@ public final class Node {
 
     public Node(NodeDto dto) {
         this(dto.i(), dto.x(), dto.li(), dto.br());
-        y = LINE_SPACING * trackNumber();
+        y = defaultY();
     }
 
     public int trackNumber() {
@@ -48,25 +46,26 @@ public final class Node {
 
     public int x() { return x; }
 
-    public int lineIndex() { return li; }
-
     public boolean breaking() { return br; }
 
     public float y() {
         return y;
     }
 
-    public void setY(float y) { this.y = y; }
-
     public void paint(Graphics g, Viewport vp) {
         int xc = vp.vpx(x());
+        int yc = vp.vpy(defaultY());
         if (breaking()) {
-            xc -= D;
+            yc += D;
             g.setColor(Color.red);
         } else {
             g.setColor(Color.black);
         }
-        int yc = vp.vpy(y());
+        y = vp.my(yc);
         g.fillOval(xc - R, yc - R, D, D);
+    }
+
+    private int defaultY() {
+        return LINE_SPACING * trackNumber();
     }
 }

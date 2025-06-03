@@ -1,49 +1,39 @@
-package ru.asmisloff;
+package ru.asmisloff.model;
 
-import org.jetbrains.annotations.NotNull;
+import ru.asmisloff.Viewport;
 
 import java.awt.*;
+
+import static java.util.Objects.requireNonNull;
 
 public final class Edge {
 
     private final Node src;
     private final Node tgt;
     private Shape shape = Shape.LINE;
-    private Color color = Color.BLACK;
 
     public enum Shape {LINE, ARC_LEFT, ARC_RIGHT}
 
-    public Edge(@NotNull Node src, @NotNull Node tgt) {
-        this.src = src;
-        this.tgt = tgt;
+    public Edge(Node src, Node tgt) {
+        this.src = requireNonNull(src, "Для ребра не задан начальный узел");
+        this.tgt = requireNonNull(tgt, "Для ребра не задан конечный узел");
     }
 
     public Node src() { return src; }
 
     public Node tgt() { return tgt; }
 
-    public Shape getShape() {
-        return shape;
-    }
-
     public void setShape(Shape shape) {
         this.shape = shape;
-    }
-
-    public void setColor(Color color) {
-        if (color != null) {
-            this.color = color;
-        }
     }
 
     public void paint(Graphics g, Viewport vp) {
         int xSrc = vp.vpx(src.x());
         int xTgt = vp.vpx(tgt.x());
-        if (src.breaking()) xSrc -= Node.D;
-        if (tgt.breaking()) xTgt -= Node.D;
-        int ySrc = src.trackNumber() * Node.LINE_SPACING;
-        int yTgt = tgt.trackNumber() * Node.LINE_SPACING;
+        int ySrc = vp.vpy(src.y());
+        int yTgt = vp.vpy(tgt.y());
 
+        g.setColor(Color.BLACK);
         if (shape == Shape.LINE) {
             g.drawLine(xSrc, ySrc, xTgt, yTgt);
         } else {
@@ -57,5 +47,9 @@ public final class Edge {
                 throw new IllegalStateException("Неизвестная форма ребра");
             }
         }
+    }
+
+    public boolean isGndShunt() {
+        return tgt.index() == 0;
     }
 }

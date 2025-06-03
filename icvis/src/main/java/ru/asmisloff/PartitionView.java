@@ -1,40 +1,52 @@
 package ru.asmisloff;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.asmisloff.dto.BranchPartitionsDto;
+import ru.asmisloff.model.BranchPartitions;
+import ru.asmisloff.model.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.SortedMap;
+import java.util.function.Consumer;
 
 public final class PartitionView extends JFrame implements Runnable {
 
-    int origin;
-    float xScale = 1f;
     private boolean disposed;
-    private final Layout lyt = new Layout();
-    final Viewport vp = new Viewport(getWidth(), getHeight());
+    private final Layout lyt;
 
-    public PartitionView(PartitionsDto dto) {
+    public PartitionView(BranchPartitionsDto dto) {
         disposed = false;
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        BranchPartitions pp = new BranchPartitions(dto);
-        lyt.setPartitions(pp);
-        lyt.viewport().setWidth(640);
-        lyt.viewport().setHeight(240);
-        lyt.viewport().setScale(40, 1);
-        lyt.viewport().setCenter(10, 0);
-        add(lyt);
-//        registerMouseListeners();
+        lyt = new Layout(new BranchPartitions(dto));
+        getContentPane().add(lyt, BorderLayout.CENTER);
+        lyt.setOnMouseMoved(new Consumer<>() {
+
+            private float mxPrev = 0f;
+
+            @Override
+            public void accept(MouseEvent e) {
+                float mx = lyt.viewport().mx(e.getX());
+                if (mxPrev != mx) {
+                    setTitle(String.format("%.3f", mx));
+                    mxPrev = mx;
+                }
+            }
+        });
     }
 
     public static PartitionView fromJson(String json) {
         ObjectMapper m = new ObjectMapper();
         try {
-            PartitionsDto dto = m.readValue(json, PartitionsDto.class);
-            return new PartitionView(dto);
+            TypeReference<SortedMap<Integer, BranchPartitionsDto>> typeRef = new TypeReference<>() { };
+            SortedMap<Integer, BranchPartitionsDto> dto = m.readValue(json, typeRef);
+            return new PartitionView(dto.get(0));
         } catch (JsonProcessingException e) {
             String msg = "Не удалось разобрать JSON";
             JOptionPane.showMessageDialog(null, msg);

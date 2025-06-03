@@ -1,4 +1,4 @@
-package ru.asmisloff;
+package ru.asmisloff.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
