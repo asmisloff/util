@@ -39,13 +39,8 @@ public final class Edge {
         } else {
             int height = Math.abs(ySrc - yTgt);
             int width = height / 8;
-            if (shape == Shape.ARC_LEFT) {
-                g.drawArc(xSrc - width / 2, Math.min(ySrc, yTgt), width, height, 90, 180);
-            } else if (shape == Shape.ARC_RIGHT) {
-                g.drawArc(xSrc - width / 2, Math.min(ySrc, yTgt), width, height, -90, 180);
-            } else {
-                throw new IllegalStateException("Неизвестная форма ребра");
-            }
+            int startAngle = (shape == Shape.ARC_LEFT) ? 90 : -90;
+            g.drawArc(xSrc - width / 2, Math.min(ySrc, yTgt), width, height, startAngle, 180);
         }
     }
 

@@ -2,13 +2,17 @@ package ru.asmisloff;
 
 import org.jetbrains.annotations.NotNull;
 import ru.asmisloff.model.BranchPartitions;
+import ru.asmisloff.model.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.function.Consumer;
+
+import static java.lang.Math.round;
 
 public class Layout extends JPanel {
 
@@ -24,6 +28,8 @@ public class Layout extends JPanel {
 
             private int x0;
             private int y0;
+            private final Rectangle2D fRect = new Rectangle2D.Float();
+            private final Rectangle iRect = new Rectangle();
 
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -32,12 +38,28 @@ public class Layout extends JPanel {
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                pp.getBoundingRect(fRect); // todo: сделать лучше
+                toViewSpace(fRect, iRect);
+                int vdx = e.getX() - x0;
+                if (vdx < 0) {
+                    iRect.x += vdx;
+                    iRect.width -= vdx;
+                } else if (vdx > 0) {
+                    iRect.width += vdx;
+                }
+                int vdy = e.getY() - y0;
+                if (vdy < 0) {
+                    iRect.y += vdy;
+                    iRect.height -= vdy;
+                } else if (vdy > 0) {
+                    iRect.height += vdy;
+                }
                 float mdx = vp.mx(e.getX()) - vp.mx(x0);
                 x0 = e.getX();
                 float mdy = e.isControlDown() ? 0 : vp.my(e.getY()) - vp.my(y0);
                 y0 = e.getY();
                 vp.setOrigin(vp.getOriginX() - mdx, vp.getOriginY() - mdy);
-                repaint();
+                repaint(iRect);
             }
 
             @Override
@@ -62,6 +84,15 @@ public class Layout extends JPanel {
                     vp.setOrigin(vp.getOriginX() - dx, vp.getOriginY() - dy);
                     repaint();
                 }
+            }
+
+            private void toViewSpace(Rectangle2D rect, Rectangle dest) {
+                int x0 = vp.vpx((float) rect.getX());
+                int y0 = vp.vpy((float) (rect.getY()));
+                int w = (int) round(vp.getScaleX() * rect.getWidth());
+                int h = (int) round(vp.getScaleY() * rect.getHeight());
+                int margin = 4 * Node.R;
+                dest.setBounds(x0 - margin, y0 - margin, w + 2 * margin, h + 2 * margin);
             }
         };
         addMouseListener(l);

@@ -1,10 +1,12 @@
 package ru.asmisloff.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.asmisloff.Viewport;
 import ru.asmisloff.dto.*;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -42,6 +44,32 @@ public class BranchPartitions {
             }
             pp.add(new Partition(cells));
         }
+    }
+
+    // todo: мемоизация.
+    // todo: учет плавающих y. boundingRect для всех объектов, система оповещения об изменении boundingRect. Посмотреть API Qt.
+    public void getBoundingRect(@Nullable Rectangle2D rect) {
+        Node firstNode = topLeftNode();
+        Node lastNode = bottomRightNode();
+        float x0 = firstNode.x();
+        float x1 = lastNode.x();
+        float y0 = firstNode.y();
+        float y1 = lastNode.y();
+        if (rect != null) {
+            rect.setRect(x0, y0, x1 - x0, y1 - y0);
+            return;
+        }
+        new Rectangle2D.Float(x0, y0, x1 - x0, y1 - y0);
+    }
+
+    private Node topLeftNode() {
+        return pp.get(0).cells().get(0).leftSection().get(0);
+    }
+
+    private Node bottomRightNode() {
+        List<Cell> lastPartitionCells = pp.get(pp.size() - 1).cells();
+        List<Node> lastSection = lastPartitionCells.get(lastPartitionCells.size() - 1).rightSection();
+        return lastSection.get(lastSection.size() - 1);
     }
 
     @NotNull
