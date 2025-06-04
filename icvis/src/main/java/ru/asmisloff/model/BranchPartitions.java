@@ -29,9 +29,20 @@ public class BranchPartitions {
         numLines = cnt;
         for (PartitionDto pDto : dto.partitions()) {
             var cells = new ArrayList<Cell>();
-            for (CellDto cellDto : pDto.cells()) {
+            for (int i = 0; i < pDto.cells().size(); i++) {
+                var cellDto = pDto.cells().get(i);
                 List<Node> leftSection = makeSection(cellDto.leftSection(), indexToNode);
+                if (i == 0) {
+                    for (Node node : leftSection) {
+                        node.markAsMotionless();
+                    }
+                }
                 List<Node> rightSection = makeSection(cellDto.rightSection(), indexToNode);
+                if (i == pDto.cells().size() - 1) {
+                    for (Node node : rightSection) {
+                        node.markAsMotionless();
+                    }
+                }
                 List<Edge> edges = new ArrayList<>();
                 for (var edgeDto : cellDto.edges()) {
                     var src = indexToNode.get(edgeDto.src());

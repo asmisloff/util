@@ -10,7 +10,7 @@ import java.awt.*;
  */
 public final class Node {
 
-    public static final int R = 3;
+    public static final int R = 4;
     public static final int D = 2 * R;
     public static final int LINE_SPACING = 50;
 
@@ -19,6 +19,7 @@ public final class Node {
     private final int li;
     private final boolean br;
     private float y;
+    private Color color;
 
     /**
      * @param index Индекс узла.
@@ -31,6 +32,7 @@ public final class Node {
         this.x = x;
         this.li = li;
         this.br = br;
+        color = br ? Color.red : Color.blue;
     }
 
     public Node(NodeDto dto) {
@@ -57,15 +59,17 @@ public final class Node {
         int yc = vp.vpy(defaultY());
         if (breaking()) {
             yc += D;
-            g.setColor(Color.red);
-        } else {
-            g.setColor(Color.black);
         }
+        g.setColor(color);
         y = vp.my(yc);
         g.fillOval(xc - R, yc - R, D, D);
     }
 
     private int defaultY() {
         return LINE_SPACING * trackNumber();
+    }
+
+    public void markAsMotionless() {
+        if (!br) color = Color.BLACK;
     }
 }
