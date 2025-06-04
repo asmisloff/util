@@ -29,7 +29,8 @@ public class Layout extends JPanel {
             private int x0;
             private int y0;
             private final Rectangle2D fRect = new Rectangle2D.Float();
-            private final Rectangle iRect = new Rectangle();
+            private final Rectangle iRect1 = new Rectangle();
+            private final Rectangle iRect2 = new Rectangle();
 
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -38,28 +39,15 @@ public class Layout extends JPanel {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                pp.getBoundingRect(fRect); // todo: сделать лучше
-                toViewSpace(fRect, iRect);
-                int vdx = e.getX() - x0;
-                if (vdx < 0) {
-                    iRect.x += vdx;
-                    iRect.width -= vdx;
-                } else if (vdx > 0) {
-                    iRect.width += vdx;
-                }
-                int vdy = e.getY() - y0;
-                if (vdy < 0) {
-                    iRect.y += vdy;
-                    iRect.height -= vdy;
-                } else if (vdy > 0) {
-                    iRect.height += vdy;
-                }
+                computeBoundingRect(iRect1);
                 float mdx = vp.mx(e.getX()) - vp.mx(x0);
                 x0 = e.getX();
                 float mdy = e.isControlDown() ? 0 : vp.my(e.getY()) - vp.my(y0);
                 y0 = e.getY();
                 vp.setOrigin(vp.getOriginX() - mdx, vp.getOriginY() - mdy);
-                repaint(iRect);
+                computeBoundingRect(iRect2);
+                computeUnion(iRect1, iRect2, iRect1);
+                repaint(iRect1);
             }
 
             @Override
@@ -72,6 +60,7 @@ public class Layout extends JPanel {
             public void mouseWheelMoved(MouseWheelEvent e) {
                 int clicks = e.getWheelRotation();
                 if (clicks != 0) {
+                    computeBoundingRect(iRect1);
                     int vx = e.getX();
                     int vy = e.getY();
                     float mx0 = vp.mx(vx);
@@ -82,17 +71,32 @@ public class Layout extends JPanel {
                     float dx = vp.mx(vx) - mx0;
                     float dy = vp.my(vy) - my0;
                     vp.setOrigin(vp.getOriginX() - dx, vp.getOriginY() - dy);
-                    repaint();
+                    computeBoundingRect(iRect2);
+                    computeUnion(iRect1, iRect2, iRect1);
+                    repaint(iRect1);
                 }
             }
 
-            private void toViewSpace(Rectangle2D rect, Rectangle dest) {
-                int x0 = vp.vpx((float) rect.getX());
-                int y0 = vp.vpy((float) (rect.getY()));
-                int w = (int) round(vp.getScaleX() * rect.getWidth());
-                int h = (int) round(vp.getScaleY() * rect.getHeight());
+            private void computeBoundingRect(Rectangle dest) {
+                pp.getBoundingRect(fRect);
+                int x0 = vp.vpx((float) fRect.getX());
+                int y0 = vp.vpy((float) (fRect.getY()));
+                int w = (int) round(vp.getScaleX() * fRect.getWidth());
+                int h = (int) round(vp.getScaleY() * fRect.getHeight());
                 int margin = 4 * Node.R;
                 dest.setBounds(x0 - margin, y0 - margin, w + 2 * margin, h + 2 * margin);
+            }
+
+            private void computeUnion(Rectangle r1, Rectangle r2, Rectangle dest) {
+                int x1 = Math.min(r1.x, r2.x);
+                if (x1 < 0) x1 = 0;
+                int y1 = Math.min(r1.y, r2.y);
+                if (y1 < 0) y1 = 0;
+                int x2 = Math.max(r1.x + r1.width, r2.x + r2.width);
+                if (x2 > getWidth()) x2 = getWidth();
+                int y2 = Math.max(r1.y + r1.height, r2.y + r2.height);
+                if (y2 > getHeight()) y2 = getHeight();
+                dest.setBounds(x1, y1, x2 - x1, y2 - y1);
             }
         };
         addMouseListener(l);
