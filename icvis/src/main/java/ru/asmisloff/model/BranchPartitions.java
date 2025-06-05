@@ -145,6 +145,6 @@ public class BranchPartitions {
     }
 
     private static final String NO_NODES_MSG = "Отсутствуют узлы";
-    private static final String REPEATED_NODE_INDEX_MSG = "Повторяющийся индекс узлов: ";
+    private static final String REPEATED_NODE_INDEX_MSG = "Повторяющийся индекс узла: ";
     private static final String REF_TO_ABSENT_NODE_MSG = "Ребро ссылается на несуществующий узел: ";
 }
