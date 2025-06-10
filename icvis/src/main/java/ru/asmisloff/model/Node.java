@@ -40,10 +40,6 @@ public final class Node {
         y = defaultY();
     }
 
-    public int trackNumber() {
-        return li % 10_000;
-    }
-
     public int index() { return index; }
 
     public int x() { return x; }
@@ -66,7 +62,11 @@ public final class Node {
     }
 
     private int defaultY() {
-        return LINE_SPACING * trackNumber();
+        int relLineIndex = li % 10_000;
+        if (relLineIndex < 1000) {
+            return LINE_SPACING * relLineIndex;
+        }
+        return LINE_SPACING * (relLineIndex / 1000) + 6 * LINE_SPACING;
     }
 
     public void markAsMotionless() {

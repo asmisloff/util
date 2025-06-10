@@ -3,7 +3,7 @@ package ru.asmisloff.model;
 import java.util.Collections;
 import java.util.List;
 
-public record Partition(List<Cell> cells) { // TODO: удалить?
+public record Partition(List<Cell> cells) {
 
     public Partition {
         if (cells.isEmpty()) {
@@ -21,4 +21,8 @@ public record Partition(List<Cell> cells) { // TODO: удалить?
 
     @Override
     public List<Cell> cells() { return Collections.unmodifiableList(cells); }
+
+    public List<Node> leftSection() {
+        return cells.get(0).leftSection();
+    }
 }

@@ -57,6 +57,15 @@ public class Layout extends JPanel {
             }
 
             @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    vp.setScale((getWidth() - 10f * Node.D) / (pp.xRight() - pp.xLeft()), 1f);
+                    vp.setOrigin(vp.mx(vp.vpx(pp.xLeft()) - 5 * Node.D), 0);
+                    repaint();
+                }
+            }
+
+            @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 int clicks = e.getWheelRotation();
                 if (clicks != 0) {

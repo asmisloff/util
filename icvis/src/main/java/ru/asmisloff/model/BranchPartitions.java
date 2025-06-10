@@ -1,9 +1,11 @@
 package ru.asmisloff.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.asmisloff.Viewport;
-import ru.asmisloff.dto.*;
+import ru.asmisloff.dto.BranchPartitionsDto;
+import ru.asmisloff.dto.EdgeDto;
+import ru.asmisloff.dto.NodeDto;
+import ru.asmisloff.dto.PartitionDto;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -59,28 +61,26 @@ public class BranchPartitions {
 
     // todo: мемоизация.
     // todo: учет плавающих y. boundingRect для всех объектов, система оповещения об изменении boundingRect. Посмотреть API Qt.
-    public void getBoundingRect(@Nullable Rectangle2D rect) {
-        Node firstNode = topLeftNode();
-        Node lastNode = bottomRightNode();
-        float x0 = firstNode.x();
-        float x1 = lastNode.x();
-        float y0 = firstNode.y();
-        float y1 = lastNode.y();
-        if (rect != null) {
-            rect.setRect(x0, y0, x1 - x0, y1 - y0);
-            return;
+    public void getBoundingRect(@NotNull Rectangle2D rect) {
+        float x1 = first(pp).xLeft();
+        float x2 = last(pp).xRight();
+        List<Node> leftSection = first(pp).leftSection();
+        float y1 = first(leftSection).y();
+        float y2 = last(leftSection).y();
+        for (int i = 1; i < pp.size(); i++) {
+            leftSection = pp.get(i).leftSection();
+            y1 = Math.min(y1, first(leftSection).y());
+            y2 = Math.max(y2, last(leftSection).y());
         }
-        new Rectangle2D.Float(x0, y0, x1 - x0, y1 - y0);
+        rect.setRect(x1, y1, x2 - x1, y2 - y1);
     }
 
-    private Node topLeftNode() {
-        return pp.get(0).cells().get(0).leftSection().get(0);
+    private static <T> T first(List<T> list) {
+        return list.get(0);
     }
 
-    private Node bottomRightNode() {
-        List<Cell> lastPartitionCells = pp.get(pp.size() - 1).cells();
-        List<Node> lastSection = lastPartitionCells.get(lastPartitionCells.size() - 1).rightSection();
-        return lastSection.get(lastSection.size() - 1);
+    private static <T> T last(List<T> list) {
+        return list.get(list.size() - 1);
     }
 
     @NotNull

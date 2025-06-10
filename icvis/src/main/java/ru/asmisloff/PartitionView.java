@@ -34,7 +34,7 @@ public final class PartitionView extends JFrame implements Runnable {
             public void accept(MouseEvent e) {
                 float mx = lyt.viewport().mx(e.getX());
                 if (mxPrev != mx) {
-                    setTitle(String.format("%.3f", mx));
+                    setTitle(String.format("%.3f", mx / 1000));
                     mxPrev = mx;
                 }
             }
