@@ -40,6 +40,10 @@ public final class Node {
         y = defaultY();
     }
 
+    public int branchIndex() { return li / 10_000; }
+
+    public int trackNumber() { return li % 10_000; }
+
     public int index() { return index; }
 
     public int x() { return x; }
@@ -62,7 +66,7 @@ public final class Node {
     }
 
     private int defaultY() {
-        int relLineIndex = li % 10_000;
+        int relLineIndex = trackNumber();
         if (relLineIndex < 1000) {
             return LINE_SPACING * relLineIndex;
         }

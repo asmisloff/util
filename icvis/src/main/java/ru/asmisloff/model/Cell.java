@@ -9,8 +9,8 @@ public record Cell(List<Node> leftSection, List<Node> rightSection, List<Edge> e
         this.leftSection = leftSection;
         this.rightSection = rightSection;
         this.edges = edges;
-        this.leftSection.sort(Comparator.comparingInt(Node::index));
-        this.rightSection.sort(Comparator.comparingInt(Node::index));
+        this.leftSection.sort(cmp);
+        this.rightSection.sort(cmp);
         setShapes();
     }
 
@@ -37,4 +37,16 @@ public record Cell(List<Node> leftSection, List<Node> rightSection, List<Edge> e
         }
         return null;
     }
+
+    private static final Comparator<Node> cmp = (a, b) -> {
+        int brCmp = Integer.compare(a.branchIndex(), b.branchIndex());
+        if (brCmp != 0) return brCmp;
+        int xCmp = Integer.compare(a.x(), b.x());
+        if (xCmp != 0) return xCmp;
+        int tCmp = Integer.compare(a.trackNumber(), b.trackNumber());
+        if (tCmp != 0) return tCmp;
+        if (a.breaking() && !b.breaking()) return -1;
+        if (b.breaking() && !a.breaking()) return 1;
+        return 0;
+    };
 }

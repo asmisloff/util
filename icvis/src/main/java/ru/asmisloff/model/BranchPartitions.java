@@ -47,6 +47,9 @@ public class BranchPartitions {
                 }
                 List<Edge> edges = new ArrayList<>();
                 for (var edgeDto : cellDto.edges()) {
+                    if (edgeDto.tgt() == 0) {
+                        continue;
+                    }
                     var src = indexToNode.get(edgeDto.src());
                     if (src == null) throw new IllegalArgumentException(danglingEdgeMsg(edgeDto));
                     var tgt = indexToNode.get(edgeDto.tgt());
